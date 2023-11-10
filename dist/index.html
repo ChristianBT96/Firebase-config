@@ -8,63 +8,48 @@
 
 </head>
 <body>
-<p>Exercise 1</p>
-<p>A</p>
-<ul class="exercise-a">
-</ul>
-
-<p>B</p>
-<ul class="exercise-b">
-</ul>
-
-<p>C</p>
-<ul class="exercise-c">
-</ul>
-
-<p>D</p>
-<ul class="exercise-d">
-    <li class="exercise-d-1"></li>
-</ul>
-
-<p>E</p>
-<ul class="exercise-e">
-</ul>
-
-<p>F</p>
-<input type="text" class="exercise-f-input">
-<button class="exercise-f-button">Find</button>
-
-
-<div class="main-block">
-
-
-    <h1>Registration</h1>
+<div class="main-block ">
+    <h1>Registration/Log in</h1>
     <form action="/">
+        <h2>CBT Notes</h2>
         <hr>
-        <div class="account-type">
-            <input type="radio" value="none" id="radioOne" name="account" checked/>
-            <label for="radioOne" class="radio">Personal</label>
-            <input type="radio" value="none" id="radioTwo" name="account" />
-            <label for="radioTwo" class="radio">Company</label>
-        </div>
+        <label class="icon" for="email"><i class="fas fa-envelope"></i></label>
+        <input type="text" name="name" id="email" placeholder="Email" required/>
+        <label class="icon" for="password"><i class="fas fa-unlock-alt"></i></label>
+        <input type="password" name="name" id="password" placeholder="Password" required/>
         <hr>
-            <label class="icon" for="email"><i class="fas fa-envelope"></i></label>
-            <input type="text" name="name" id="email" placeholder="Email" required/>
-            <label class="icon" for="name"><i class="fas fa-user"></i></label>
-            <input type="text" name="name" id="name" placeholder="Name" required/>
-            <label class="icon" for="password"><i class="fas fa-unlock-alt"></i></label>
-            <input type="password" name="name" id="password" placeholder="Password" required/>
-        <hr>
-        <button type="button" id="submit">Submit</button>
+        <button type="button" id="log-in">Log in</button>
+        <button type="button" id="create">Create Account</button>
 
     </form>
-    <h1>Registered Users</h1>
-    <!-- Create a container (div, list, etc) to contain registered users -->
-    <!-- something like this, but generated in javascript, you can delete the below example -->
-    <ul>
+
+</div>
+
+<div class="logged-in invisible">
+
+    <h1 class="LIW">Welcome {USER}</h1>
+    <br>
+    <hr>
+    <button type="button" id="logout">Log out</button>
+
+    <form action="/">
+        <hr>
+        <label class="icon" for="note-title"><i class="fas fa-envelope"></i></label>
+        <input type="text" name="name" id="note-title" placeholder="Note Title" required/>
+        <br>
+        <label class="icon" for="note-paragraph"><i class="fas fa-user"></i></label>
+        <input type="text" name="name" id="note-paragraph" placeholder="Your personal note" required/>
+        <button type="button" id="add-note">Pin note</button>
+        <hr>
+    </form>
+
+    <ul class="notes">Your notes
 
     </ul>
+
 </div>
+
+
 </body>
-<script src="main.js"></script>
+<script src="./main.js"></script>
 </html>

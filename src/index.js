@@ -1,13 +1,8 @@
-// Import the functions you need from the SDKs you need
+
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import {getFirestore, collection, query, where, getDocs, orderBy, limit, count } from "firebase/firestore";
+import {getFirestore, collection, doc, setDoc, query, where, getDocs } from "firebase/firestore";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
     apiKey: "AIzaSyBD1aeMQYzhfghcViiy-e_bLV-PxriMr2s",
     authDomain: "fir-test1-6227f.firebaseapp.com",
@@ -18,100 +13,126 @@ const firebaseConfig = {
     measurementId: "G-EE6WGQCYMQ"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const auth = getAuth(initializeApp(firebaseConfig));
 
-// Exercise 1
-// A
-const citiesRef = collection(db, 'cities');
-const q1 = query(citiesRef, where("capital", "!=", true));
-const snapshotA = await getDocs(q1);
+const notesRef = collection(db, "Notes");
 
-const exerciseA = document.querySelector(".exercise-a")
 
-snapshotA.forEach((doc) => {
-    const li = document.createElement("li");
-    li.innerText = doc.data().name;
-    exerciseA.appendChild(li);
-})
-// B
-const q2 = query(citiesRef, where("country", "in", ["USA", "China"]));
-const snapshotB = await getDocs(q2);
-const exerciseB = document.querySelector(".exercise-b")
+const email = document.querySelector("#email");
+const password = document.querySelector("#password");
+const logInBtn = document.querySelector("#log-in");
 
-snapshotB.forEach((doc) => {
-    const li = document.createElement("li");
-    li.innerText = doc.data().name;
-    exerciseB.appendChild(li);
-});
+const logInBlock = document.querySelector(".main-block");
+const loggedInBlock = document.querySelector(".logged-in");
 
-// C
-const q3 = query(citiesRef, orderBy("population", "desc"), limit(1));
-const snapshotC = await getDocs(q3);
-const exerciseC = document.querySelector(".exercise-c")
-snapshotC.forEach((doc) => {
-    const li = document.createElement("li");
-    li.innerText = `${doc.data().name} ${doc.data().population}`;
-    exerciseC.appendChild(li);
-});
+const getUserNotesFromDB = async () => {
+    const user = auth.currentUser;
+    const uid = user.uid;
+    const q = query(notesRef, where("uid", "==", uid));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((note) => {
+        console.log(note.data());
+        const noteTitle = note.data().title;
+        const noteParagraph = note.data().paragraph;
+        const noteAuthor = note.data().author;
+        const noteId = note.id;
+        const noteHTML = `
+            <div class="note">
+                <h2>${noteTitle}</h2>
+                <p>${noteParagraph}</p>
+                <h5>${noteAuthor}</h5>
+                <button class="delete" data-id="${noteId}">Delete</button>
+            </div>
+        `;
+        loggedInBlock.insertAdjacentHTML("beforeend", noteHTML);
+    });
+}
 
-// D
-const q4 = query(citiesRef, where ("country", "!=", null));
-const snapshotD = await getDocs(q4);
-const exerciseD = document.querySelector(".exercise-d")
+const  logIn = async () => {
+    const emailValue = email.value;
+    const passwordValue = password.value;
+    await signInWithEmailAndPassword(auth, emailValue, passwordValue)
+        .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            // ...
+            logInBlock.classList.add("invisible");
+            loggedInBlock.classList.remove("invisible");
+            email.value = "";
+            password.value = "";
+            getUserNotesFromDB();
+        })
+        .catch((error) => {
+            const errorMessage = error.message;
+            console.log(errorMessage);
+            alert(errorMessage);
+        });
+};
 
-snapshotD.forEach((doc) => {
-    console.log(doc.data().country);
-});
+logInBtn.addEventListener("click", logIn);
 
-const countryArray = [];
+const createAccountBtn = document.querySelector("#create");
 
-snapshotD.forEach((element, index) => {
+const createAccount = () => {
+    const emailValue = email.value;
+    const passwordValue = password.value;
+    createUserWithEmailAndPassword(auth, emailValue, passwordValue)
+        .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            // ...
+            console.log(user.email);
+        })
+        .catch((error) => {
+            const errorMessage = error.message;
+            console.log(errorMessage);
+            alert(errorMessage);
+        });
+}
 
-    const currentCountry = element.data().country;
+createAccountBtn.addEventListener("click", createAccount);
 
-    const alreadyInCountryArray = countryArray.find((item) => item.name === currentCountry);
 
-    if (alreadyInCountryArray) {
-        alreadyInCountryArray.count++;
-    } else {
-        countryArray.push({ name:currentCountry, count: 1});
-    }
-});
+const logOutBtn = document.querySelector("#logout");
+const addNotesBtn = document.querySelector("#add-note");
+const noteTitle = document.querySelector("#note-title");
+const noteText = document.querySelector("#note-paragraph");
 
-const liD = document.querySelector(".exercise-d-1");
-liD.innerText = countryArray.sort((a, b) => b.count - a.count)[0].name;
 
-// E) Display a list of names of cities that are capitals with a population higher than 5.000.000
+const addNoteToDB = async () => {
+    const noteTitleValue = noteTitle.value;
+    const noteTextValue = noteText.value;
+    const user = auth.currentUser;
+    const uid = user.uid;
+    await setDoc(doc(notesRef), {
+        author: user.email,
+        title: noteTitleValue,
+        paragraph: noteTextValue,
+        uid: uid
+    })
+        .then(() => {
+            console.log("Document successfully written!");
+            noteTitle.value = "";
+            noteText.value = "";
+        })
+        .catch((error) => {
+            console.error("Error writing document: ", error);
+        });
+}
 
-const q5a = query(citiesRef, where("capital", "==", true));
-const q5b = query(q5a, where("population", ">", 5000000));
-const snapshotE = await getDocs(q5b);
-const exerciseE = document.querySelector(".exercise-e")
 
-snapshotE.forEach((doc) => {
-    const li = document.createElement("li");
-    li.innerText = doc.data().name;
-    exerciseE.appendChild(li);
-});
 
-// F) Write a basic input-field in the HTML page.
-// When the user enters a city name in the field and clicks a button,
-// the application will display an alert with "found" or "not found"
-// if the user has inputted a city name in the database.
+addNotesBtn.addEventListener("click", addNoteToDB);
 
-const inputF = document.querySelector(".exercise-f-input");
-const buttonF = document.querySelector(".exercise-f-button");
-
-buttonF.addEventListener("click", async () => {
-    const q6 = query(citiesRef, where("name", "==", inputF.value));
-    const snapshotF = await getDocs(q6);
-    if (snapshotF.empty) {
-        alert("not found");
-    } else {
-        alert("found");
-    }
+logOutBtn.addEventListener("click", async () => {
+    await auth.signOut().then(() => {
+        logInBlock.classList.remove("invisible");
+        loggedInBlock.classList.add("invisible");
+    }).catch((error) => {
+        console.log(error);
+    });
 });
 
